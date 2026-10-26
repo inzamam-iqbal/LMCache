@@ -37,6 +37,10 @@ ARG SOURCE_IMAGE=lmcache/vllm-openai:latest-nightly
 # running interpreter so it tracks whatever site-packages / venv the image uses.
 FROM ${SOURCE_IMAGE} AS extract
 
+# The official images run as the non-root lmcache user, which cannot create
+# /payload; this throwaway stage needs root, the final image is busybox.
+USER root
+
 RUN set -eux; \
     SITE="$(python3 -c 'import os, lmcache; print(os.path.dirname(os.path.dirname(os.path.abspath(lmcache.__file__))))')"; \
     test -f "$SITE/lmcache/__init__.py"; \
